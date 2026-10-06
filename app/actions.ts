@@ -14,7 +14,34 @@ export async function submitContact(_prev: ContactState, formData: FormData): Pr
   if (message.length > 2000) fields.message = true
 
   if (Object.keys(fields).length || !consent) return { status: 'error', fields }
+  
+  const text = `
+Новая заявка с сайта:
+Имя: ${name}
+Телефон: ${phone}
+Сообщение: ${message || 'Не указано'}
+`
+  
+  try {
+    const response = await fetch(`https://api.telegram.org/bot8924834874:AAG6CL0NNWCqJkrItGhdqk73nu7cGPjs5bA/sendMessage`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        chat_id: '131755470',
+        text: text,
+      }),
+    })
+    
+    if (!response.ok) {
+      console.error('Telegram API error:', await response.text())
+      return { status: 'error' }
+    }
+  } catch (error) {
+    console.error('Fetch error:', error)
+    return { status: 'error' }
+  }
 
-  await new Promise((r) => setTimeout(r, 700))
   return { status: 'success' }
 }
